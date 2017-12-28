@@ -1,0 +1,278 @@
+2017-10-27 18:37:33,123 - datamining - INFO - Added: 1338        STCN
+306         CLAM
+143         BERN
+1590         XLM
+1659         ZLQ
+1522         WEX
+2690         NRC
+2745         PAC
+2044        CTIC
+1897         BTD
+2364         HDG
+3016    STOCKBET
+1135         PRP
+3035         SWT
+2481         KRC
+621        GBYTE
+1884       BSTAR
+2590         MIV
+2546        MANA
+123          BAC
+1072         PAC
+2677         NLC
+0              7
+2912         SAR
+2049        CUBE
+3333         ZNA
+1872         BQX
+3058      TENNET
+102          ATB
+1106         PLM
+          ...   
+1447         UNC
+1004         NLC
+2070        DBIX
+1089         PEX
+359         CRNK
+307        CLICK
+1492        VOYA
+3193      WEALTH
+189         BON*
+502          ELE
+220         BTCR
+2194         EON
+3305         XVG
+749          IND
+1430         TTT
+1469        VEC2
+1831       BITOK
+2658       NDOGE
+766           IW
+880         MASS
+3303         XVC
+1503         VTX
+2455         JVY
+889           MC
+2176        ELIX
+2968       SNGLS
+557         FAZZ
+2895         RRT
+1885        BSTK
+2370        HIRE
+Name: Symbol, dtype: object
+2017-10-27 18:39:29,244 - datamining - INFO - Added: 1338        STCN
+306         CLAM
+143         BERN
+1590         XLM
+1659         ZLQ
+1522         WEX
+2690         NRC
+2745         PAC
+2044        CTIC
+1897         BTD
+2364         HDG
+3016    STOCKBET
+1135         PRP
+3035         SWT
+2481         KRC
+621        GBYTE
+1884       BSTAR
+2590         MIV
+2546        MANA
+123          BAC
+1072         PAC
+2677         NLC
+0              7
+2912         SAR
+2049        CUBE
+3333         ZNA
+1872         BQX
+3058      TENNET
+102          ATB
+1106         PLM
+          ...   
+1447         UNC
+1004         NLC
+2070        DBIX
+1089         PEX
+359         CRNK
+307        CLICK
+1492        VOYA
+3193      WEALTH
+189         BON*
+502          ELE
+220         BTCR
+2194         EON
+3305         XVG
+749          IND
+1430         TTT
+1469        VEC2
+1831       BITOK
+2658       NDOGE
+766           IW
+880         MASS
+3303         XVC
+1503         VTX
+2455         JVY
+889           MC
+2176        ELIX
+2968       SNGLS
+557         FAZZ
+2895         RRT
+1885        BSTK
+2370        HIRE
+Name: Symbol, dtype: object
+2017-10-27 18:40:37,423 - datamining - INFO - Added 651 coins.
+2017-10-27 18:40:37,431 - datamining - INFO - Added: 1338        STCN
+306         CLAM
+143         BERN
+1590         XLM
+1659         ZLQ
+1522         WEX
+2690         NRC
+2745         PAC
+2044        CTIC
+1897         BTD
+2364         HDG
+3016    STOCKBET
+1135         PRP
+3035         SWT
+2481         KRC
+621        GBYTE
+1884       BSTAR
+2590         MIV
+2546        MANA
+123          BAC
+1072         PAC
+2677         NLC
+0              7
+2912         SAR
+2049        CUBE
+3333         ZNA
+1872         BQX
+3058      TENNET
+102          ATB
+1106         PLM
+          ...   
+1447         UNC
+1004         NLC
+2070        DBIX
+1089         PEX
+359         CRNK
+307        CLICK
+1492        VOYA
+3193      WEALTH
+189         BON*
+502          ELE
+220         BTCR
+2194         EON
+3305         XVG
+749          IND
+1430         TTT
+1469        VEC2
+1831       BITOK
+2658       NDOGE
+766           IW
+880         MASS
+3303         XVC
+1503         VTX
+2455         JVY
+889           MC
+2176        ELIX
+2968       SNGLS
+557         FAZZ
+2895         RRT
+1885        BSTK
+2370        HIRE
+Name: Symbol, dtype: object
+2017-10-30 17:15:39,465 - datamining - INFO - Added 1199 coins.
+2017-10-30 17:15:39,465 - datamining - INFO - Added: [u'SOON' u'CLAM' u'MAT*' ..., u'HIRE' u'RZR' u'ILC']
+2017-10-30 17:17:29,942 - datamining - INFO - Added 654 coins.
+2017-10-30 17:17:29,946 - datamining - INFO - Added: [u'STCN' u'CLAM' u'BERN' u'XLM' u'ZLQ' u'WEX' u'NRC' u'PAC' u'CTIC' u'BTD'
+ u'HDG' u'STOCKBET' u'PRP' u'SWT' u'KRC' u'GBYTE' u'BSTAR' u'MIV' u'MANA'
+ u'BAC' u'PAC' u'NLC' u'7' u'SAR' u'CUBE' u'ZNA' u'BQX' u'TENNET' u'ATB'
+ u'PLM' u'FDC' u'UBQ' u'DTT' u'LOG' u'MUSIC' u'DCK' u'BOTS' u'CDN' u'PRIME'
+ u'HRB' u'PBKX' u'OLV' u'ATM' u'MOON' u'DOGE' u'SKIN' u'DTCT' u'MILO'
+ u'PIVX' u'BamitCoin' u'STHR' u'B3' u'VNT' u'AMB' u'NPX' u'CASH*' u'TPG'
+ u'MTH' u'GCN' u'ARC1' u'GOAT' u'VISIO' u'XT' u'VEN' u'VLT' u'B@' u'NTM'
+ u'AUT' u'VTY' u'STA' u'CYT' u'DOGE' u'REAL' u'DGT' u'XTZ' u'SCL' u'RBX'
+ u'BITCNY' u'ALC' u'SANDG' u'SFE' u'SCOR' u'TPAY' u'GROW' u'SCASH' u'LRC'
+ u'EC' u'UET' u'DIME' u'PASC' u'LBTC' u'BQX' u'XID*' u'MTX' u'HCC' u'WSX'
+ u'LOG' u'PLM' u'PXI' u'XID' u'BOU' u'XP' u'GOLOS' u'PTA' u'INV' u'EDR'
+ u'DGD' u'WHL' u'DFT' u'TCR' u'NKC' u'DRA' u'WARP' u'HKG' u'COIN' u'EXP'
+ u'CRAB' u'BULLS' u'ECOB' u'WEX' u'XEN' u'AND' u'CFT*' u'STCN' u'808'
+ u'1337' u'RADI' u'MANA' u'ETC' u'BAC' u'DP' u'MUE' u'MOON' u'PRIME' u'XCS'
+ u'JDC' u'TUR' u'VEC2' u'TTT' u'IFC' u'PX' u'AMT' u'MDT' u'BST' u'AMB'
+ u'ATB' u'BCN' u'PASL' u'GREXIT' u'INXT' u'TFL' u'PXI' u'PULSE' u'TRICK'
+ u'WAN' u'BOSS' u'XAI*' u'BTZ' u'DTCT' u'NTM' u'CTT' u'ETT' u'AND' u'INF8'
+ u'COIN' u'FIST' u'CYT' u'ENTER' u'BULLS' u'KR' u'CAB' u'BamitCoin'
+ u'ROYAL' u'PRM' u'808' u'CFC' u'SIFT' u'CAT' u'WSX' u'CAT' u'KC' u'CRNK'
+ u'BTZ' u'CSMIC' u'GCN' u'IWT' u'ZEIT' u'UBQ' u'ARPA' u'XT' u'PASL' u'B@'
+ u'BITUSD' u'KIN' u'CFT*' u'CND' u'BST' u'AIB' u'SLS' u'NUM' u'EDR' u'MEME'
+ u'SCT*' u'BRO' u'RBX' u'BERN' u'SUR' u'NKC' u'KAYI' u'USDT' u'CLOUD' u'B3'
+ u'ILCT' u'BET*' u'RADI' u'EMPC' u'OLDSF' u'KR' u'EMPC' u'SUR' u'CDN'
+ u'INF8' u'NTC' u'ZLQ' u'USDT' u'PLNC' u'BSTAR' u'CFC' u'XVG' u'TRIBE'
+ u'GRT' u'BUCKS' u'WHL' u'TPG' u'IN' u'PULSE' u'WAN' u'EXP' u'LINK' u'ETBS'
+ u'FIND' u'EC' u'INCP' u'XID*' u'XVC' u'CUBE' u'INCP' u'DIEM' u'CTT'
+ u'CCRB' u'AIB' u'DRGN' u'SDC' u'XAI*' u'REAL' u'OROC' u'BON*' u'LIMX'
+ u'GSY' u'LBTC' u'ACE' u'DEUR' u'ROYAL' u'IGNIS' u'MDT' u'STS' u'BOU'
+ u'HBT' u'DMT' u'ETBS' u'PEN' u'MTX' u'TFL' u'BSTK' u'FIRE' u'IFT' u'INV'
+ u'VTY' u'IFC' u'VSL' u'CTIC' u'BUCKS' u'BTE' u'IN' u'HRB' u'DENT' u'MEME'
+ u'AUT' u'GBT' u'PAY' u'HEEL' u'OLDSF' u'DGT' u'CASH*' u'FONZ' u'STOCKBET'
+ u'PRM' u'ECOB' u'PTA' u'LTH' u'DIM' u'ENTER' u'DP' u'ATM' u'DENT' u'SBD'
+ u'ILCT' u'TPAY' u'SOCC' u'PIRL' u'NDOGE' u'AMT' u'FIST' u'LOC' u'1337'
+ u'DGD' u'VLT' u'ATOM*' u'RLC' u'GRT' u'ALTOCAR' u'SP' u'DRS' u'MCO'
+ u'SIFT' u'POLL' u'SDC' u'FIRE' u'PBKX' u'PEN' u'UET' u'XTZ' u'DRS' u'NPX'
+ u'ZYD' u'KIN' u'VTX' u'XUP' u'CRX' u'BEST' u'HDG' u'CLAM' u'ALTOCAR'
+ u'ARC1' u'XLM' u'JDC' u'DRA' u'PX' u'PEX' u'MUSIC' u'XDE2' u'SCL' u'VEN'
+ u'DFT' u'NEU' u'ADST' u'EVX' u'SFE' u'GREXIT' u'GROW' u'FIND' u'RNDR'
+ u'SCT*' u'ENE' u'FLY' u'SLS' u'HIRE' u'FDC' u'ELT' u'DISK' u'OXY' u'MILO'
+ u'NTC' u'XCS' u'TRA' u'EXE' u'NICE' u'KAYI' u'DMT' u'RRT' u'BITOK' u'EDGE'
+ u'KRC' u'UNIQ' u'YES' u'NETC' u'TCR' u'CAB' u'SKIN' u'GRC' u'IW' u'BITSD'
+ u'CLICK' u'HKG' u'WARP' u'ALC' u'MASS' u'MIV' u'DIM' u'TENNET' u'RLC'
+ u'MOJO' u'IND' u'FLAP' u'LTH' u'APC' u'SHIFT' u'ETC' u'CAT*' u'LRC'
+ u'NUBIS' u'MCRN' u'MCO' u'CLOUD' u'SANDG' u'OLV' u'GOLOS' u'EON' u'RBIT'
+ u'HCC' u'ELT' u'BOTS' u'WEALTH' u'INXT' u'DCK' u'VNT' u'ELE' u'NEU' u'JVY'
+ u'CSMIC' u'STHR' u'PASC' u'SEN' u'BBT' u'TRICK' u'X2' u'IMPS' u'ETT'
+ u'ICOS' u'KC' u'TDFB' u'EVX' u'PRP' u'SNT' u'XAUR' u'MOJO' u'DCN' u'SYNX'
+ u'BEST' u'GBYTE' u'DRGN' u'XBTS' u'CAT*' u'TRST' u'VISIO' u'IFT' u'LINK'
+ u'WISC' u'SDP' u'MTH' u'SNT' u'BET*' u'UR' u'CABS' u'PAY' u'NUM' u'STA'
+ u'FIL' u'XRL' u'YAY' u'WORM' u'OMA' u'LIMX' u'YAY' u'EFL' u'FND' u'CND'
+ u'007' u'FOREX' u'FFC' u'VSL' u'GRC' u'GBT' u'EXE' u'XRL' u'APC' u'BOSS'
+ u'TRX' u'COR' u'SWT' u'EOC' u'FLY' u'ZEIT' u'PZM' u'F16' u'ICE' u'C20'
+ u'SAR' u'PIVX' u'NRC' u'FONZ' u'NXTI' u'ALIS' u'XID' u'C20' u'BTCR' u'ICE'
+ u'XDE2' u'PLNC' u'UNIQ' u'IWT' u'INCNT' u'ODN' u'NXTI' u'LNK' u'TME'
+ u'IMPS' u'BBT' u'DIEM' u'FLAP' u'WORM' u'UNC' u'CABS' u'ODN' u'SHIFT'
+ u'BCN' u'BITUSD' u'MMXVI' u'SCOR' u'AMS' u'DTT' u'COR' u'SPACE' u'DEUR'
+ u'FAZZ' u'TRA' u'WISC' u'RBIT' u'FOREX' u'GOAT' u'DISK' u'BON' u'ATOM*'
+ u'MUE' u'XSP' u'CLUB' u'XAUR' u'XEN' u'LOC' u'SDP' u'BTE' u'VOYA' u'CCRB'
+ u'POLL' u'X2' u'BON' u'YES' u'FND' u'ACE' u'TRST' u'BITCNY' u'BIOS'
+ u'BIOS' u'STS' u'SCASH' u'GSY' u'VRM' u'VRM' u'HEEL' u'IGNIS' u'BRO'
+ u'TDFB' u'AMS' u'PIRL' u'ENE' u'RNDR' u'CRX' u'TRX' u'SYNX' u'OXY'
+ u'NUBIS' u'EOC' u'SNGLS' u'SPACE' u'UR' u'EDGE' u'ARPA' u'NETC' u'LNK'
+ u'MC' u'CRAB' u'NICE' u'XSP' u'PZM' u'XP' u'CLUB' u'FFC' u'FIL' u'ADST'
+ u'SP' u'BITSD' u'ALIS' u'TME' u'OMA' u'TRIBE' u'SEN' u'ZNA' u'OROC' u'BTD'
+ u'XUP' u'INCNT' u'ICOS' u'F16' u'HBT' u'DBIX' u'MMXVI' u'TUR' u'DCN'
+ u'SOCC' u'EFL' u'DIME' u'SBD' u'XBTS' u'MCRN' u'UNC' u'NLC' u'DBIX' u'PEX'
+ u'CRNK' u'CLICK' u'VOYA' u'WEALTH' u'BON*' u'ELE' u'BTCR' u'EON' u'XVG'
+ u'IND' u'TTT' u'VEC2' u'BITOK' u'NDOGE' u'IW' u'MASS' u'XVC' u'VTX' u'JVY'
+ u'MC' u'ELIX' u'SNGLS' u'FAZZ' u'RRT' u'BSTK' u'HIRE']
+2017-10-30 17:20:15,249 - datamining - INFO - Added 654 coins.
+2017-10-30 17:20:15,251 - datamining - INFO - Added: None
+2017-10-30 17:42:44,151 - datamining - INFO - Added 5 coins.
+2017-10-30 17:42:44,152 - datamining - INFO - Added: [u'7' u'KAYI' u'007' u'KAYI' u'ZYD']
+2017-10-30 17:43:52,442 - datamining - INFO - Added 5 coins.
+2017-10-30 17:43:52,443 - datamining - INFO - Added: [u'7' u'KAYI' u'007' u'KAYI' u'ZYD']
+2017-10-30 17:49:28,011 - datamining - INFO - Added 2 coins.
+2017-10-30 17:49:28,012 - datamining - INFO - Added: [u'ELIX' u'ACID']
+2017-11-01 17:19:05,854 - datamining - INFO - Added 10 coins.
+2017-11-01 17:19:05,854 - datamining - INFO - Added: [u'TKR' u'XIOS' u'DTR' u'KCS' u'CABS*' u'ARC1' u'BRAT' u'AR*' u'ELITE'
+ u'ODMC']
+2017-11-03 17:18:02,457 - datamining - INFO - Added 17 coins.
+2017-11-03 17:18:02,458 - datamining - INFO - Added: [u'ELIX' u'BTDX' u'ETN' u'BT2' u'REA' u'JCR' u'LOAN*' u'AVE' u'ENG' u'SHP'
+ u'DOV*' u'KEY*' u'ZAB' u'DTT*' u'BT1' u'MDL' u'XNN']
+2017-11-03 17:18:47,161 - datamining - INFO - Added 1 coins.
+2017-11-03 17:18:47,679 - datamining - INFO - Added: [u'ELIX']
+2017-11-06 17:18:03,051 - datamining - INFO - Added 11 coins.
+2017-11-06 17:18:03,052 - datamining - INFO - Added: [u'PTC*' u'ST' u'EBST' u'ATM' u'ALTCOM' u'UGT' u'KEK' u'DATA' u'ATM'
+ u'BHC*' u'XSB']
