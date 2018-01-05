@@ -87,13 +87,18 @@ class Miner:
         url = 'https://min-api.cryptocompare.com/data/all/exchanges'
         df = self.scraper.get_tradepair_data(url)
         coins = []
+        data_f = {}
         for ex in exchanges:
             ex_df = df[ex]
             ex_df.dropna(inplace=True)
             ex_coins = ex_df.index.values
             ex_coins = [s.encode('utf-8') for s in ex_coins]
             coins.append(ex_coins)
-
+            data_f[ex] = ex_coins
+        
+        with io.open('data/exchanges/exchange_coins.txt', 'w',
+                encoding='utf-8') as f:
+            f.write(json.dumps(data_f, ensure_ascii=False))
         return coins
 
     def get_bases(self, coin):
@@ -253,7 +258,6 @@ class Miner:
             if f.endswith('.csv'):
                 coinlist.append(f.split(".")[0])
         
-        coinlist = coinlist[337:]
         for c in coinlist:
             hdf5_path = 'data/exchanges/{}_supply.hdf5'.format(c)
             if read:#os.path.exists(hdf5_path):
