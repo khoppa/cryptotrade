@@ -83,8 +83,28 @@ class Viewer:
 
     def get_coinsupply(self, time, coin):
         """ Gets coin supply for COIN for TIME.
+            Since the data source we got the coin supply only has supply
+            for every 6 hours, this function will return the closest
+            supply in the dataset to TIME.
+
+            Args:
+                time(int): Time in Unix epoch
+                coin(str): Coin to get supply for.
+            Returns:
+                supply(int32): Supply of COIN at nearest TIME.
         """
-
-
-
-
+        supply_path = '{}{}_supply.hdf5'.format(self.data_path, coin)
+        if not os.path.exists(supply_path):
+            self.logger.info('Supply for {} not available.'.format(coin))
+        else:
+            supply_file = tables.open_file(supply_path)
+            data = supply_file.root.dataset[:]
+            if len(data) == 0:
+                self.logger.info('Supply for {} not available.'.format(coin))
+                supply = None
+            else:
+                time_data = data[:, 0]
+                idx = (np.abs(time_data - time)).argmin()
+                supply = data[idx, 1]
+            supply_file.close()
+            return supply
