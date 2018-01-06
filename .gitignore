@@ -1,2 +1,8 @@
 # ignore generated data
 datamining/data/exchanges/*
+
+# Compiled Source #
+*.pyc
+
+# OS generated files #
+.DS_Store
