@@ -6,3 +6,6 @@ http://proceedings.mlr.press/v55/amjad16.pdf
 
 # Model for predictive trading on bitcoin
 http://ai2-s2-pdfs.s3.amazonaws.com/e065/3631b4a476abf5276a264f6bbff40b132061.pdf
+
+# GitHub of a python ML cryptotrade repo
+https://github.com/llens/CryptoCurrencyTrader
