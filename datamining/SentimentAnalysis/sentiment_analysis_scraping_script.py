@@ -15,8 +15,10 @@ if __name__ == '__main__':
             "https://bitcointalk.org/index.php?board=8.0"]
     allowed_domains = ["bitcointalk.org",]
 
-    dates, texts = scrape_subreddits(subreddits, submission_limit=20)
+    #dates, texts = scrape_subreddits(subreddits, submission_limit=20)
 
+    dates = []
+    texts = []
     dates_temp, texts_temp = scrape_forums(forum_urls, allowed_domains,
             max_pages=20)
 

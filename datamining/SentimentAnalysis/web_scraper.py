@@ -45,13 +45,20 @@ class ForumSpider(scrapy.Spider):
 
             soup = BeautifulSoup(response.body, "html.parser")
             texts_raw = soup.find_all('div', class_="post")
+            for t in texts_raw:
+                quotes = t.find_all('div', class_="quote")
+                for q in quotes:
+                    q.decompose()
+                q_header = t.find_all('div', class_="quoteheader")
+                for qh in q_header:
+                    qh.decompose()
             dates_raw = soup.find_all('div', class_="smalltext")
 
             dates = []
             for date in dates_raw:
                 date = date.get_text()
                 if any(substring in date for substring in date_word_list) \
-                    and len(date) < 30:
+                    and len(date) < 32:
                     date = convert_date_to_unix_time(date)
                     dates.append(date)
 
@@ -63,16 +70,6 @@ class ForumSpider(scrapy.Spider):
 
             filename_date = "temp_date_output.txt"
             filename_text = "temp_text_output.txt"
-
-            try:
-                os.remove(filename_date)
-            except OSError:
-                pass
-
-            try:
-                os.remove(filename_text)
-            except OSError:
-                pass
 
             with open(filename_date, "a") as f1:
                 pickle.dump(dates, f1)
@@ -105,6 +102,20 @@ def convert_date_to_unix_time(date_local):
 
 def scrape_forums(url, allowed_domain, max_pages):
     sys.setrecursionlimit(10000)
+
+    filename_date = "temp_date_output.txt"
+    filename_text = "temp_text_output.txt"
+    try:
+        os.remove(filename_date)
+    except OSError:
+        pass
+
+    try:
+        os.remove(filename_text)
+    except OSError:
+        pass
+
+
     process = CrawlerProcess({
         'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
     })
@@ -116,11 +127,25 @@ def scrape_forums(url, allowed_domain, max_pages):
     process.start()
     process.stop()
 
+    dates = []
+    texts = []
     with open("temp_date_output.txt", "r") as f1:
-        dates = pickle.load(f1)
+        while 1:
+            try:
+                dates_temp = pickle.load(f1)
+                for d in dates_temp:
+                    dates.append(d)
+            except EOFError:
+                break
 
     with open("temp_text_output.txt", "r") as f2:
-        texts = pickle.load(f2)
+        while 1:
+            try:
+                texts_temp = pickle.load(f2)
+                for t in texts_temp:
+                    texts.append(t)
+            except EOFError:
+                break
 
     return dates, texts
 
@@ -134,7 +159,7 @@ def scrape_subreddit(subreddit, submission_limit):
                          user_agent=user_agent)
 
     for submission in reddit.subreddit(subreddit).hot(limit=submission_limit):
-        dates .append(submission.created)
+        dates.append(submission.created)
         texts.append(submission.selftext)
 
         for comment in submission.comments[:]:
