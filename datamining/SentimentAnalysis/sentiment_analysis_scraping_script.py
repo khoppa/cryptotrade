@@ -1,4 +1,4 @@
-from web_scraper import scrape_subreddits, scrape_forums
+from web_scraper import scrape_subreddits, scrape_forums, scrape_twitter
 from sentiment_analysis import analyse_sentiments
 
 from matplotlib import pyplot as plt
@@ -15,18 +15,25 @@ if __name__ == '__main__':
             "https://bitcointalk.org/index.php?board=8.0"]
     allowed_domains = ["bitcointalk.org",]
 
-    #dates, texts = scrape_subreddits(subreddits, submission_limit=20)
+    dates, texts = scrape_subreddits(subreddits, submission_limit=20)
 
-    dates = []
-    texts = []
-    dates_temp, texts_temp = scrape_forums(forum_urls, allowed_domains,
-            max_pages=20)
+    #dates = []
+    #texts = []
+    #dates_temp, texts_temp = scrape_forums(forum_urls, allowed_domains,
+    #        max_pages=20)
 
-    dates += dates_temp
-    texts += texts_temp
+    #dates += dates_temp
+    #texts += texts_temp
+
+    dates_temp, texts_temp = scrape_twitter(bitcoin_keywords)
+
+    dates += dates_temp.tolist()
+    texts += texts_temp.tolist()
 
     dates, texts, sentiments = analyse_sentiments(dates, texts, bitcoin_keywords)
 
     plt.figure(1)
     plt.plot(dates, sentiments, "o")
     plt.show()
+
+

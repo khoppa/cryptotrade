@@ -1,4 +1,5 @@
 import praw
+import pandas as pd
 import scrapy
 import pickle
 import os
@@ -10,6 +11,7 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.spiders import Rule
 from scrapy.exceptions import CloseSpider
 from scrapy.linkextractors import LinkExtractor
+from twitterscraper import query_tweets
 from API_settings import client_id, client_secret, user_agent
 
 date_word_list = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -182,3 +184,17 @@ def scrape_subreddits(subreddits, submission_limit):
         texts_local += texts_temp
 
     return dates_local, texts_local
+
+def scrape_twitter(coin_words):
+    query = coin_words[0]
+    for word in coin_words[1:]:
+        add = ' OR ' + word
+        query += add
+
+    list_of_tweets = query_tweets(query, limit=100, lang='en')
+
+    list_of_tweets = [vars(x) for x in list_of_tweets]
+    df = pd.DataFrame(list_of_tweets)
+    df.drop(columns=['fullname', 'id', 'url'], inplace=True)
+    df['timestamp'] = df['timestamp'].astype(int) // (10 ** 9)
+    return df['timestamp'], df['text']
