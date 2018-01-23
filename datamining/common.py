@@ -6,6 +6,7 @@
 # OS/Standard imports
 import sys
 import os
+import io
 from os import listdir
 import time
 import logging

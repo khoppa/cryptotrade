@@ -49,20 +49,28 @@ class Miner:
         df = df.transpose()
 
         if df is not None:
-            coinlist = df[['Symbol', 'CoinName']]
+            coinlist = df[['Symbol', 'CoinName', 'Id']]
+            coinlist['Id'] = coinlist['Id'].astype(np.int64)
+            coinlist.loc[:, 'pricedata'] = False
+            coinlist.loc[:, 'twitter'] = []
+            coinlist.loc[:, 'reddit'] = []
+            coinlist.reset_index(drop=True, inplace=True)
+
         if self.read:
             old_cl = pd.read_csv('data/coinlist.csv', encoding='utf-8')
             if len(old_cl) < len(coinlist):
                 old_cl.to_csv('data/coinlistold.csv', index=False,
                         encoding='utf-8')
-                coinlist.to_csv('data/coinlist.csv', index=False,
-                        encoding='utf-8')
                 diff = pd.concat([old_cl, coinlist])
                 diff = diff.reset_index(drop=True)
-                diff_gp = diff.groupby(list(diff.columns))
+                diff_gp = diff.groupby(list(diff.columns)[0])
                 idx = [x[0] for x in diff_gp.groups.values() if len(x) == 1]
                 diff_coins = diff.reindex(idx)['Symbol']
             
+                coinlist = old_cl.append(diff.iloc[idx], ignore_index=True)
+                coinlist.to_csv('data/coinlist.csv', index=False,
+                        encoding='utf-8')
+
                 coinlist_logger = create_logger('datamining', 'output/coinlist.log')
                 coinlist_logger.info('Added %d coins.' % len(diff_coins))
                 coinlist_logger.info('Added: %s' % diff_coins.values)
@@ -86,6 +94,9 @@ class Miner:
         """
         url = 'https://min-api.cryptocompare.com/data/all/exchanges'
         df = self.scraper.get_tradepair_data(url)
+        coinlist = pd.read_csv('data/coinlist.csv', encoding='utf-8')
+                
+        #dtype={'pricedata':'boolean'})
         coins = []
         data_f = {}
         for ex in exchanges:
@@ -95,10 +106,12 @@ class Miner:
             ex_coins = [s.encode('utf-8') for s in ex_coins]
             coins.append(ex_coins)
             data_f[ex] = ex_coins
-        
-        with io.open('data/exchanges/exchange_coins.txt', 'w',
-                encoding='utf-8') as f:
-            f.write(json.dumps(data_f, ensure_ascii=False))
+            for c in ex_coins:
+                coinlist.loc[coinlist.Symbol == c, 'pricedata'] = True
+
+        with open('data/exchange_coins.txt', 'w') as f:
+            json.dump(data_f, f, ensure_ascii=False)
+        coinlist.to_csv('data/coinlist.csv', index=False, encoding='utf-8')
         return coins
 
     def get_bases(self, coin):

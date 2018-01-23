@@ -1,5 +1,7 @@
 # ignore generated data
 datamining/data/exchanges/*
+datamining/SentimentAnalysis/data/*
+*.csv
 
 # Compiled Source #
 *.pyc

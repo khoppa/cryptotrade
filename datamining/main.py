@@ -20,7 +20,8 @@ def create_logger():
     logger.addHandler(ch)
     return logger
 
-def get_coin_prices(loader, major_exchanges):
+def get_coin_prices(logger, loader, major_exchanges):
+    logger.info('Importing prices.')
     coins = loader.get_exchange_coins(major_exchanges)
     for i, e in enumerate(major_exchanges):
         ex_coins = coins[i]
@@ -33,13 +34,16 @@ def get_coin_supply(loader):
 
 if __name__ == "__main__":
     logger = create_logger()
-    logger.info('Importing prices.')
-    loader = Miner(read=False)
-    #loader.get_coinlist()
-    #loader.get_bases("BTC")
+    loader = Miner(read=True)
+
     major_exchanges = ["BitTrex", "Bitfinex", "Bithumb", "Bitstamp", \
             "Coinbase", "Gemini", "bitFlyer", "Binance", "Coinone", \
             "HitBTC", "Poloniex", "Kraken", "Korbit", "Huobi"]
+
+    #loader.get_coinlist()
+    #loader.get_exchange_coins(major_exchanges)
+    #loader.get_bases("BTC")
     #major_exchanges = ["Binance"]
     #get_coin_prices(loader, major_exchanges)
-    get_coin_supply(loader)
+    #get_coin_supply(loader)
+
