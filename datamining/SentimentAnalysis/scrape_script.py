@@ -1,8 +1,21 @@
 from web_scraper import *
 from sentiment_analysis import analyse_sentiments
+from redditmetrics_scraper import ScrapeRedditMetrics
 
 from matplotlib import pyplot as plt
+def scrape_social_media_data():
+    scrape_socials()
+    scrape_cmc_subreddits()
+    combine_socials()
+    get_nosocial_list()
 
+def import_sentiments():
+    """ Imports sentiment analysis data. Grabs social media links
+        from SentimentAnalysis/data/coinlist.csv, and performs
+        sentiment analysis via bitcointalk, twitter, reddit, and
+        google trends.
+    """
+    return None
 
 if __name__ == '__main__':
     bitcoin_keywords = ['bitcoin', 'bitcoins', 'xbt', 'btc', 'Bitcoin',
@@ -39,12 +52,7 @@ if __name__ == '__main__':
     """
     btc_words = ["bitcoin", "bitcoins", "btc", "xbt"]
     #scrape_google_trends(btc_words)
-    #scrape_socials()
-    #get_potential_subreddits()
-    #visualize_pots()
-    #test()
-    #scrape_cmc_subreddits()
-    #combine_socials()
-    #clean_socials()
-    get_nosocial_list()
+    #scrape_social_media_data()
 
+
+    scrape_subreddit_subs()

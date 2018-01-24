@@ -22,6 +22,7 @@ from scrapy.exceptions import CloseSpider
 from scrapy.linkextractors import LinkExtractor
 
 from twitterscraper import query_tweets
+from redditmetrics_scraper import ScrapeRedditMetrics
 from pytrends.request import TrendReq
 
 from API_settings import client_id, client_secret, user_agent
@@ -200,12 +201,57 @@ def scrape_subreddits(subreddits, submission_limit):
     return dates_local, texts_local
 
 
-def scrape_subreddit_subs(subreddit, submission_limit):
+def scrape_subreddit_subs():
     """ Scrapes historical subscriber count for SUBREDDIT,
-        using redditmetrics.com.
+        using redditmetrics.com. Writes data to COIN.csv
     """
-    return None
+    base_url = 'http://redditmetrics.com/r/'
+    coinlist = pd.read_csv('data/coinlist.csv')
+    for i, row in coinlist.iterrows():
+        if row['pricedata'] == True and pd.notnull(row['reddit']):
+            coin = row['Symbol']
+            subreddits = row['reddit'].decode('unicode_escape').encode(
+                    'ascii', 'ignore')
+            try:
+                subreddits = ast.literal_eval(subreddits)
+                df = pd.DataFrame(columns=['date', 'subscriber_count'])
+                for s in subreddits:
+                    url = base_url + s
+                    metrics = ScrapeRedditMetrics(url)
+                    df_temp = metrics.scrape_and_parse()
+                    if df_temp is not None:
+                        df = df.merge(df_temp, on='date',
+                                how='outer', suffixes=['', '_'+s])
+                df.drop('subscriber_count', axis=1, inplace=True)
+                df.to_csv('data/redditmetrics/{}.csv'.format(coin), index=False)
 
+            except (ValueError, SyntaxError):
+                url = base_url + subreddits
+                metrics = ScrapeRedditMetrics(url)
+                df = metrics.scrape_and_parse()
+                if df is None:
+                    print '{} doesnt have subreddit subscriber data'.format(
+                            subreddits)
+                else:
+                    df.to_csv('data/redditmetrics/{}.csv'.format(coin),
+                            index=False)
+
+
+def test():
+    coinlist = pd.read_csv('data/coinlist.csv', encoding='utf-8')
+    bcc = coinlist.loc[coinlist['Symbol'] == 'BCCOIN']
+    #subreddits = bcc['reddit'].values[0].encode('ascii')
+    subreddits = bcc['reddit'].str.decode('unicode_escape').str.encode('ascii', 'ignore')
+    subreddits = ast.literal_eval(subreddits.values[0])
+
+    df = pd.DataFrame(columns=['date', 'subscriber_count'])
+    for s in subreddits:
+        url = 'http://redditmetrics.com/r/' + s
+        metrics = ScrapeRedditMetrics(url)
+        df = df.merge(metrics.scrape_and_parse(), on='date', how='outer',
+                suffixes=['', '_'+s])
+    df.drop('subscriber_count', axis=1, inplace=True)
+    print df
 
 def scrape_twitter(coin_words):
     """ Scrapes Twitter for tweets with COIN_WORDS.
@@ -256,7 +302,7 @@ def scrape_socials():
                 reddit = social_df.loc['Reddit', 'link'].split('/')[-2]
                 df.loc[i, 'reddit'] = reddit
 
-    df.to_csv(coinlist_path, index=False, encoding='utf-8')
+    df.to_csv('data/output/cleaned_coinlist.csv', index=False, encoding='utf-8')
 
 
 def clean_socials():
@@ -275,7 +321,7 @@ def clean_socials():
             reddit = row['reddit'].split('/')[-2]
             df.loc[i, 'reddit'] = reddit
 
-    df.to_csv('data/output/cleaned_coinlist.csv', encoding='utf-8')
+    df.to_csv('data/output/cleaned_coinlist.csv', index=False, encoding='utf-8')
 
  
 def search_potential_subreddits():
@@ -454,4 +500,3 @@ def get_social_data(url=''):
     else:
         raise ValueError("API Pull unsuccessful") 
         return None
-
