@@ -8,8 +8,11 @@ import scrapy
 import pickle
 import os
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 from datetime import datetime, date, time
-from time import mktime
+from time import mktime, sleep
 
 import ast
 from calmjs.parse import es5
@@ -17,7 +20,7 @@ from collections import Counter
 
 from bs4 import BeautifulSoup
 from scrapy.crawler import CrawlerProcess
-from scrapy.spiders import Rule
+from scrapy.spiders import CrawlSpider, Rule
 from scrapy.exceptions import CloseSpider
 from scrapy.linkextractors import LinkExtractor
 
@@ -34,73 +37,213 @@ date_word_list = ['January', 'February', 'March', 'April', 'May', 'June',
         'December', 'Today'
         ]
 
-
-class ForumSpider(scrapy.Spider):
+class ForumSpider(CrawlSpider):
     name = "forums"
     auto_throttle_enabled = True
     download_delay = 1.5
-    rules = (Rule(LinkExtractor(), callback="parse", follow=True),
+    rules = (
+        Rule(LinkExtractor(
+            allow_domains='bitcointalk.org',
+            allow=['topic'],
+            deny=['profile', 'new', 'msg', 'action', 'prev_next', 'all',
+                'print', 'torrent'],
+            restrict_xpaths=("//span")),
+            callback="parse_posts",
+            process_request='filter_moved'
+                ),
+        Rule(LinkExtractor(
+            allow_domains='bitcointalk.org',
+            deny=['profile', 'new', 'msg', 'action', 'prev_next', 'all',
+                'print','sort'],
+            restrict_xpaths=("//a[contains(@class, 'navPages')]")),
+            callback="parse_boards",
+            process_links='sort_links',
+            follow=True,
+                ),
              )
+
+
+    def __init__(self, *args, **kwargs):
+        self.coin = kwargs.pop('coin', None)
+        super(ForumSpider, self).__init__(*args, **kwargs)
+        self.visited = []
+
 
     def start_requests(self):
         self.pages_crawled = 0
         for url in self.start_urls:
             yield scrapy.Request(url=url, callback=self.parse)
+            
 
-    def parse(self, response):
+    def parse_first(self, response):
+        """ Parsing method for first urls that are passed into Scrapy.
+            These urls are the main board urls for bitcointalk, and thus
+            filtering the urls in these responses will cut down on
+            processing duplicates and unwanted links.
+        """
+        return self.parse(response)
+
+
+    def filter_moved(self, request):
+        anchor = request.meta.get('link_text')
+        if 'MOVED' in anchor:
+            return None
+        else:
+            return request
+
+    def sort_links(self, links):
+        sorted_links = sorted(links,
+                key=lambda k: int(k.url.split('=')[-1].split('.')[-1]))
+        return sorted_links
+
+    def sort_post_links(self, links):
+        return sorted(links, key=lambda k:
+                k.url.split('=')[-1].split('.')[-1])
+
+
+    """
+    def filter_doubles(self, links):
+        new_links = []
+        for link in links:
+            if link.url not in self.visited:
+                new_links.append(link)
+
+        return new_links
+    """
+
+
+    def parse_page(self, response):
         for link in LinkExtractor(allow_domains=
                 self.allow_domains).extract_links(response):
             yield scrapy.Request(url=link.url,
                     callback=self.read_posts_bitcointalk)
 
-    def read_posts_bitcointalk(self, response):
-        url_post_string = ['topic', ]
 
-        if any(substring in response.url for substring in url_post_string):
-            self.pages_crawled += 1
-            self.check_max_pages()
+    def parse_boards(self, response):
+        print 'parse_boards % s' % response.url
+        return self.parse(response)
 
-            soup = BeautifulSoup(response.body, "html.parser")
-            texts_raw = soup.find_all('div', class_="post")
-            for t in texts_raw:
-                quotes = t.find_all('div', class_="quote")
+
+    def parse_posts(self, response):
+        self.pages_crawled += 1
+        self.check_max_pages()
+        #self.visited.append(response.url)
+        print 'parse_posts % s' % response.url
+
+        soup = BeautifulSoup(response.body, "html.parser")
+        dates, texts, posters = self.get_post_data(soup)
+        posts = []
+        post = response.url.split('=')[-1]
+        [posts.append(post) for d in dates]
+
+        dates, texts, posts, posters = self.parse_posts_additional(response,
+                dates, texts, posts, posters)
+
+        file_path = 'data/bitcointalk/{}_posts.csv'.format(self.coin)
+        df = pd.read_csv(file_path, encoding='utf-8')
+        try:
+            new_df = pd.DataFrame({'timestamp':dates, 'text':texts,
+                'post':posts, 'author':posters})
+        except:
+            print len(dates)
+            print len(texts)
+            print len(posts)
+            print len(posters)
+        new_df['post'] = pd.to_numeric(new_df['post'])
+        new_df['text'] = new_df['text'].map(lambda x: x.encode(
+            'unicode-escape').decode('utf-8'))
+        #df = df.append(new_df, ignore_index=True)
+        df = df.merge(new_df, on=list(df), how='outer') 
+        df.drop_duplicates(inplace=True, keep='last')
+        df.to_csv(file_path, index=False, encoding='utf-8')
+
+
+    def parse_posts_additional(self, response, dates=[], texts=[], posts=[],
+            posters=[]):
+        links = LinkExtractor(allow_domains=
+                self.allow_domains,
+                unique=True,
+                restrict_xpaths=("//a[contains(@class, 'navPages')]")
+                ).extract_links(response)
+
+        sorted_links = self.sort_links(links)
+        for link in sorted_links:
+            print 'parse_additional % s' % link.url
+            req = requests.get(url=link.url)
+            soup  = BeautifulSoup(req.content, "html.parser")
+            dates_new, texts_new, posters_new = self.get_post_data(soup)
+            [dates.append(d) for d in dates_new]
+            [texts.append(t) for t in texts_new]
+            [posters.append(p) for p in posters_new]
+            [posts.append(link.url.split('=')[-1]) for d in dates_new]
+            sleep(self.download_delay)
+        return dates, texts, posts, posters
+
+
+    def get_post_data(self, soup):
+        """ Gets dates and text from SOUP, a BeautifulSoup object created
+            from a bitcointalk post.
+            Args:
+                soup(BeautifulSoup): BeautifulSoup object
+            Returns:
+                dates: list of dates from post
+                texts: list of text from post
+        """
+        tds_raw = soup.find_all('td', class_=['windowbg', 'windowbg2'])
+        texts = []
+        posters = []
+        for td in tds_raw:
+            text_raw = td.find('div', class_="post")
+            if text_raw:
+                quotes = text_raw.find_all('div', class_="quote")
                 for q in quotes:
                     q.decompose()
-                q_header = t.find_all('div', class_="quoteheader")
+                q_header = text_raw.find_all('div', class_="quoteheader")
                 for qh in q_header:
                     qh.decompose()
-            dates_raw = soup.find_all('div', class_="smalltext")
-
-            dates = []
-            for date in dates_raw:
-                date = date.get_text()
-                if any(substring in date for substring in date_word_list) \
-                    and len(date) < 32:
-                    date = convert_date_to_unix_time(date)
-                    dates.append(date)
-
-            texts = []
-            for text in texts_raw:
-                text = text.get_text().encode('utf-8')
+                text = text_raw.get_text().encode('utf-8')
                 if not text.isdigit():
                     texts.append(text)
+                    poster = td.find('td', class_='poster_info').b.a['href']
+                    posters.append(poster.split('=')[-1])
 
-            filename_date = "temp_date_output.txt"
-            filename_text = "temp_text_output.txt"
 
-            with open(filename_date, "a") as f1:
-                pickle.dump(dates, f1)
+        dates_raw = soup.find_all('div', class_="smalltext")
 
-            with open(filename_text, "a") as f2:
-                pickle.dump(texts, f2)
+        dates = []
+        for date in dates_raw:
+            date = date.get_text()
+            if any(substring in date for substring in date_word_list) \
+                and len(date) < 32:
+                date = convert_date_to_unix_time(date)
+                dates.append(date)
 
-        url_board_string = ["board=5", "board=7", "board=8"]
-        if any(substring in response.url for substring in url_board_string):
-            self.parse(response)
+        return dates, texts, posters
+
 
     def check_max_pages(self):
         if self.pages_crawled > self.max_pages:
             raise CloseSpider(reason='Page number exceeded')
+
+def tester():
+    req = requests.get('https://bitcointalk.org/index.php?topic=2653884.0')
+    soup = BeautifulSoup(req.content, 'html.parser')
+    tds_raw = soup.find_all('td', class_=['windowbg', 'windowbg2'])
+    texts = []
+    posters = []
+    for td in tds_raw:
+        text_raw = td.find('div', class_='post')
+        if text_raw:
+            text = text_raw.get_text().encode('utf-8')
+            if not text.isdigit():
+                texts.append(text)
+                p = td.find('td', class_='poster_info')
+                if p:
+                    print p.b.a.string
+                    print text
+                #poster = td.find('td', class_='poster_info').b.a['href']
+                #posters.append(poster.split('=')[-1])
+
 
 
 def convert_date_to_unix_time(date_local):
@@ -117,20 +260,13 @@ def convert_date_to_unix_time(date_local):
     return date_local
 
 
-def scrape_forums(url, allowed_domain, max_pages):
+def scrape_forums(url, allowed_domain, max_pages, coin):
     sys.setrecursionlimit(10000)
 
-    filename_date = "temp_date_output.txt"
-    filename_text = "temp_text_output.txt"
-    try:
-        os.remove(filename_date)
-    except OSError:
-        pass
-
-    try:
-        os.remove(filename_text)
-    except OSError:
-        pass
+    file_path = 'data/bitcointalk/{}_posts.csv'.format(coin)
+    if not os.path.exists(file_path):
+        df = pd.DataFrame(columns=['timestamp', 'text', 'post', 'author'])
+        df.to_csv(file_path, index=False, encoding='utf-8')
 
 
     process = CrawlerProcess({
@@ -140,31 +276,9 @@ def scrape_forums(url, allowed_domain, max_pages):
     spider = ForumSpider()
 
     process.crawl(spider, start_urls=url,
-            allow_domains=allowed_domain, max_pages=max_pages)
+            allow_domains=allowed_domain, max_pages=max_pages, coin=coin)
     process.start()
     process.stop()
-
-    dates = []
-    texts = []
-    with open("temp_date_output.txt", "r") as f1:
-        while 1:
-            try:
-                dates_temp = pickle.load(f1)
-                for d in dates_temp:
-                    dates.append(d)
-            except EOFError:
-                break
-
-    with open("temp_text_output.txt", "r") as f2:
-        while 1:
-            try:
-                texts_temp = pickle.load(f2)
-                for t in texts_temp:
-                    texts.append(t)
-            except EOFError:
-                break
-
-    return dates, texts
 
 
 def scrape_subreddit(subreddit, submission_limit):
@@ -237,22 +351,6 @@ def scrape_subreddit_subs():
                             index=False)
 
 
-def test():
-    coinlist = pd.read_csv('data/coinlist.csv', encoding='utf-8')
-    bcc = coinlist.loc[coinlist['Symbol'] == 'BCCOIN']
-    #subreddits = bcc['reddit'].values[0].encode('ascii')
-    subreddits = bcc['reddit'].str.decode('unicode_escape').str.encode('ascii', 'ignore')
-    subreddits = ast.literal_eval(subreddits.values[0])
-
-    df = pd.DataFrame(columns=['date', 'subscriber_count'])
-    for s in subreddits:
-        url = 'http://redditmetrics.com/r/' + s
-        metrics = ScrapeRedditMetrics(url)
-        df = df.merge(metrics.scrape_and_parse(), on='date', how='outer',
-                suffixes=['', '_'+s])
-    df.drop('subscriber_count', axis=1, inplace=True)
-    print df
-
 def scrape_twitter(coin_words):
     """ Scrapes Twitter for tweets with COIN_WORDS.
         Args:
@@ -324,73 +422,6 @@ def clean_socials():
     df.to_csv('data/output/cleaned_coinlist.csv', index=False, encoding='utf-8')
 
  
-def search_potential_subreddits():
-    """ Gets potential subreddits for coins that have pricedata, from
-        coinlist.csv. Does this by searching for the coin symbol and
-        coin name separately through reddit.
-        Saves file into potential_subs.csv.
-    """
-    parent_dir = os.path.abspath('..')
-    coinlist_path = os.path.join(parent_dir, 'data/coinlist.csv')
-    df = pd.read_csv(coinlist_path, encoding='utf-8')
-
-    reddit = praw.Reddit(client_id=client_id,
-                         client_secret=client_secret,
-                         user_agent=user_agent)
-
-    potential_subs = pd.DataFrame(columns=['Symbol', 'CoinName', 'Subreddits'])
-
-    for i, row in df.iterrows():
-        if row['pricedata'] == True:
-            coinwords = [row['Symbol'], row['CoinName']]
-            subs = []
-            for w in coinwords:
-                try:
-                    #subs_temp = reddit.subreddits.search_by_topic(w)
-                    #[subs.append(s.display_name) for s in subs_temp]
-                    subs_temp = reddit.subreddits.search(w)
-                    [subs.append(s.display_name) for s in subs_temp \
-                            if s.display_name not in subs]
-                except Exception, e:
-                    print 'Error for {}'.format(w)
-                    pass
-            
-            potential_subs.loc[len(potential_subs)] = [row['Symbol'],
-                    row['CoinName'], subs]
-
-    #potential_subs.to_json('data/potential_subs.json',
-    #        orient='index', force_ascii=False)
-    potential_subs.to_csv('data/output/potential_subs.csv', index=False)
-
-
-def shorten_potential_subreddits():
-    df = pd.read_csv('data/output/potential_subs.csv')
-    df['Subreddits'] = df['Subreddits'].apply(ast.literal_eval)
-
-    #df = pd.read_json('data/potential_subs.json', orient='index', encoding='utf-8')
-    #with open('data/potential_subs.json') as data_file:
-    #    df = json.load(data_file, encoding='utf-8')
-
-    subs = []
-    """
-    for x in df:
-        for s in df[x]['Subreddits']:
-            subs.append(s)
-    """
-    for i, row in df.iterrows():
-        for s in row['Subreddits']:
-            subs.append(s)
-    sub_count = dict(((e, subs.count(e)) for e in set(subs)), reverse=True)
-    for i, row in df.iterrows():
-        coinsubs = row['Subreddits']
-        newsubs = []
-        for s in coinsubs:
-            if sub_count[s] < 3:
-                newsubs.append(s)
-        df.loc[i, 'Subreddits'] = newsubs 
-    df.to_csv('data/output/potential_subs_filtered.csv', index=False)
-
-
 def scrape_cmc_subreddits():
     """ Gets potential subreddits from CoinMarketCap. Searches the 
         coin and scrapes the resulting site.
@@ -500,3 +531,70 @@ def get_social_data(url=''):
     else:
         raise ValueError("API Pull unsuccessful") 
         return None
+
+
+def search_potential_subreddits():
+    """ Gets potential subreddits for coins that have pricedata, from
+        coinlist.csv. Does this by searching for the coin symbol and
+        coin name separately through reddit.
+        Saves file into potential_subs.csv.
+    """
+    parent_dir = os.path.abspath('..')
+    coinlist_path = os.path.join(parent_dir, 'data/coinlist.csv')
+    df = pd.read_csv(coinlist_path, encoding='utf-8')
+
+    reddit = praw.Reddit(client_id=client_id,
+                         client_secret=client_secret,
+                         user_agent=user_agent)
+
+    potential_subs = pd.DataFrame(columns=['Symbol', 'CoinName', 'Subreddits'])
+
+    for i, row in df.iterrows():
+        if row['pricedata'] == True:
+            coinwords = [row['Symbol'], row['CoinName']]
+            subs = []
+            for w in coinwords:
+                try:
+                    #subs_temp = reddit.subreddits.search_by_topic(w)
+                    #[subs.append(s.display_name) for s in subs_temp]
+                    subs_temp = reddit.subreddits.search(w)
+                    [subs.append(s.display_name) for s in subs_temp \
+                            if s.display_name not in subs]
+                except Exception, e:
+                    print 'Error for {}'.format(w)
+                    pass
+            
+            potential_subs.loc[len(potential_subs)] = [row['Symbol'],
+                    row['CoinName'], subs]
+
+    #potential_subs.to_json('data/potential_subs.json',
+    #        orient='index', force_ascii=False)
+    potential_subs.to_csv('data/output/potential_subs.csv', index=False)
+
+
+def shorten_potential_subreddits():
+    df = pd.read_csv('data/output/potential_subs.csv')
+    df['Subreddits'] = df['Subreddits'].apply(ast.literal_eval)
+
+    #df = pd.read_json('data/potential_subs.json', orient='index', encoding='utf-8')
+    #with open('data/potential_subs.json') as data_file:
+    #    df = json.load(data_file, encoding='utf-8')
+
+    subs = []
+    """
+    for x in df:
+        for s in df[x]['Subreddits']:
+            subs.append(s)
+    """
+    for i, row in df.iterrows():
+        for s in row['Subreddits']:
+            subs.append(s)
+    sub_count = dict(((e, subs.count(e)) for e in set(subs)), reverse=True)
+    for i, row in df.iterrows():
+        coinsubs = row['Subreddits']
+        newsubs = []
+        for s in coinsubs:
+            if sub_count[s] < 3:
+                newsubs.append(s)
+        df.loc[i, 'Subreddits'] = newsubs 
+    df.to_csv('data/output/potential_subs_filtered.csv', index=False)
