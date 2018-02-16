@@ -9,3 +9,7 @@ http://ai2-s2-pdfs.s3.amazonaws.com/e065/3631b4a476abf5276a264f6bbff40b132061.pd
 
 # GitHub of a python ML cryptotrade repo
 https://github.com/llens/CryptoCurrencyTrader
+
+# Backtesting/trading infrastructures
+https://www.backtrader.com
+https://github.com/enigmampc/catalyst
