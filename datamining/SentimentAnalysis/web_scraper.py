@@ -13,6 +13,7 @@ sys.setdefaultencoding('utf8')
 
 from datetime import datetime, date, time
 from time import mktime, sleep
+from tqdm import tqdm
 
 import ast
 from calmjs.parse import es5
@@ -145,10 +146,8 @@ class ForumSpider(CrawlSpider):
             new_df = pd.DataFrame({'timestamp':dates, 'text':texts,
                 'post':posts, 'author':posters})
         except:
-            print len(dates)
-            print len(texts)
-            print len(posts)
-            print len(posters)
+            print 'parsing lengths do not match.'
+
         new_df['post'] = pd.to_numeric(new_df['post'])
         new_df['text'] = new_df['text'].map(lambda x: x.encode(
             'unicode-escape').decode('utf-8'))
@@ -225,26 +224,6 @@ class ForumSpider(CrawlSpider):
         if self.pages_crawled > self.max_pages:
             raise CloseSpider(reason='Page number exceeded')
 
-def tester():
-    req = requests.get('https://bitcointalk.org/index.php?topic=2653884.0')
-    soup = BeautifulSoup(req.content, 'html.parser')
-    tds_raw = soup.find_all('td', class_=['windowbg', 'windowbg2'])
-    texts = []
-    posters = []
-    for td in tds_raw:
-        text_raw = td.find('div', class_='post')
-        if text_raw:
-            text = text_raw.get_text().encode('utf-8')
-            if not text.isdigit():
-                texts.append(text)
-                p = td.find('td', class_='poster_info')
-                if p:
-                    print p.b.a.string
-                    print text
-                #poster = td.find('td', class_='poster_info').b.a['href']
-                #posters.append(poster.split('=')[-1])
-
-
 
 def convert_date_to_unix_time(date_local):
     if 'Today at ' in date_local:
@@ -284,36 +263,68 @@ def scrape_forums(url, allowed_domain, max_pages, coin):
 def scrape_subreddit(subreddit, submission_limit):
     dates = []
     texts = []
+    posts = []
+    authors = []
 
     reddit = praw.Reddit(client_id=client_id,
                          client_secret=client_secret,
                          user_agent=user_agent)
 
-    for submission in reddit.subreddit(subreddit).hot(limit=submission_limit):
-        dates.append(submission.created)
-        texts.append(submission.selftext)
-
-        for comment in submission.comments[:]:
-            if hasattr(comment, 'created'):
-                dates.append(comment.created)
-                texts.append(comment.body)
+    subreddit = reddit.subreddit(subreddit)
+    try:
+        for submission in subreddit.hot(limit=submission_limit):
+            dates.append(submission.created)
+            texts.append(submission.selftext)
+            posts.append(submission.id)
+            if submission.author:
+                authors.append(submission.author.name)
             else:
-                pass
+                authors.append('None')
 
-    return dates, texts
+            for comment in submission.comments[:]:
+                if hasattr(comment, 'created'):
+                    dates.append(comment.created)
+                    texts.append(comment.body)
+                    posts.append(submission.id)
+                    if comment.author:
+                        authors.append(comment.author.name)
+                    else:
+                        authors.append('None')
+                else:
+                    pass
+    except:
+        print subreddit
+
+    return dates, texts, posts, authors
 
 
-def scrape_subreddits(subreddits, submission_limit):
-    dates_local = []
-    texts_local = []
+def scrape_subreddits(coin, subreddits, submission_limit):
+    dates = []
+    texts = []
+    posts = []
+    authors = []
+
+    if isinstance(subreddits, basestring):
+        subreddits = [subreddits]
     for subreddit in subreddits:
-        dates_temp, texts_temp = scrape_subreddit(subreddit, submission_limit)
+        dates_temp, texts_temp, posts_temp, authors_temp = scrape_subreddit(
+                subreddit, submission_limit)
 
-        dates_local += dates_temp
-        texts_local += texts_temp
+        dates += dates_temp
+        texts += texts_temp
+        posts += posts_temp
+        authors += authors_temp
 
-    return dates_local, texts_local
+    df = pd.DataFrame({'timestamp':dates, 'text':texts,
+            'post':posts, 'author':authors})
+    df['text'] = df['text'].map(
+            lambda x: x.encode('unicode-escape').decode('utf-8'))
+    df['author'] = df['author'].map(
+            lambda x: x.encode('unicode-escape').decode('utf-8'))
 
+
+    file_path = 'data/subreddits/{}.csv'.format(coin)
+    add_data(file_path, df)
 
 def scrape_subreddit_subs():
     """ Scrapes historical subscriber count for SUBREDDIT,
@@ -321,7 +332,7 @@ def scrape_subreddit_subs():
     """
     base_url = 'http://redditmetrics.com/r/'
     coinlist = pd.read_csv('data/coinlist.csv')
-    for i, row in coinlist.iterrows():
+    for i, row in tqdm(coinlist.iterrows(), total=coinlist.shape[0]):
         if row['pricedata'] == True and pd.notnull(row['reddit']):
             coin = row['Symbol']
             subreddits = row['reddit'].decode('unicode_escape').encode(
@@ -337,7 +348,8 @@ def scrape_subreddit_subs():
                         df = df.merge(df_temp, on='date',
                                 how='outer', suffixes=['', '_'+s])
                 df.drop('subscriber_count', axis=1, inplace=True)
-                df.to_csv('data/redditmetrics/{}.csv'.format(coin), index=False)
+                file_path = 'data/redditmetrics/{}.csv'.format(coin)
+                add_data(file_path, df)
 
             except (ValueError, SyntaxError):
                 url = base_url + subreddits
@@ -351,7 +363,7 @@ def scrape_subreddit_subs():
                             index=False)
 
 
-def scrape_twitter(coin_words):
+def scrape_tweets(coin, coin_words, limit=100):
     """ Scrapes Twitter for tweets with COIN_WORDS.
         Args:
             coin_words(list): list of cryptocurrency key words.
@@ -362,24 +374,57 @@ def scrape_twitter(coin_words):
         add = ' OR ' + word
         query += add
 
-    list_of_tweets = query_tweets(query, limit=100, lang='en')
+    list_of_tweets = query_tweets(query, limit=limit, lang='en')
 
     list_of_tweets = [vars(x) for x in list_of_tweets]
     df = pd.DataFrame(list_of_tweets)
-    df.drop(columns=['fullname', 'id', 'url'], inplace=True)
-    df['timestamp'] = df['timestamp'].astype(int) // (10 ** 9)
-    return df['timestamp'], df['text']
+    try:
+        df.drop(columns=['fullname', 'url'], inplace=True)
+        df['timestamp'] = df['timestamp'].astype(int) // (10 ** 9)
+        df['text'] = df['text'].map(
+                lambda x: x.encode('unicode-escape').decode('utf-8'))
 
+        file_path = 'data/twitter/{}.csv'.format(coin)
+        add_data(file_path, df)
+    except Exception as e:
+        print '{} produced {}'.format(coin, e)
 
-def scrape_google_trends(coin_words):
+def scrape_google_trends(coin, coin_words):
     """ Scrapes Google Trends for trend data of interest over time
         based on COIN_WORDS.
     """
     pytrends = TrendReq(hl='en-US', tz=0)
     pytrends.build_payload(kw_list=coin_words)
-    df = pytrends.interest_over_time()
-    print df.tail()
+    try: 
+        df = pytrends.interest_over_time()
+        df['timestamp'] = df.index.values.astype(int) // (10 ** 9)
+        file_path = 'data/googletrends/{}.csv'.format(coin)
+        add_data(file_path, df)
 
+    except:
+        print '{} produced error.'.format(coin)
+
+
+def add_data(file_path, df):
+    """ Method for adding scraped data. Checks if file already exists
+        for scraped data. If it exists, appends to existing file.
+        Args:
+            file_path (str): Path for saving DataFrame
+            df (pd.DataFrame): DataFrame with new scraped data.
+    """
+    if os.path.exists(file_path):
+        old_df = pd.read_csv(file_path, encoding='utf-8')
+        df = old_df.merge(df, on=list(old_df), how='outer') 
+        df.drop_duplicates(inplace=True, keep='last')
+ 
+    df.to_csv(file_path, index=False, encoding='utf-8')
+
+
+"""
+Methods for scraping social media handles. Used in succession to 
+grab social media handles for coins from different sources, then
+aggregated and cleaned to be manually processed at the end.
+"""
 
 def scrape_socials():
     """ Gets social media sites for twitter and reddit from cryptocompare.
@@ -465,6 +510,7 @@ def scrape_cmc_subreddits():
                     row['CoinName'], reddit, twitter]
 
     potential_subs.to_csv('data/output/cmc_subs.csv', index=False)
+
 
 def combine_socials():
     """ Combines social media sites scraped from CoinMarketCap with 
